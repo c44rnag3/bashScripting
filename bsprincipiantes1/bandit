@@ -1,0 +1,87 @@
+// Niveles propuestos en Bandit //
+---------------------------------
+Level 0:
+	Objetivo: Adentrarme en el juego (host) usando SSH
+	Host: bandit.labs.overthewire.org
+	Port: 2220
+	Username: bandit0
+	Password: bandit0
+	Commands: ssh
+- Procedimiento:
+conexión ssh -> bandit0@bandit.labs.overthewire.org -p 2220
+		username@dirección_host -p número_puerto
+	Finalmente, especificar contraseña solicitada: bandit0
+
+Level 0 -> Level 1:
+	Objetivo: Conseguir la contraseña del siguiente usuario
+	Host: bandit.labs.overthewire.org
+	Port: 2220
+	Username: bandit1
+	Password: *Obtenida del readme del nivel
+	Commands: ls, cd, cat, file, du, find
+- Procedimiento:
+usando el comando cat -> visualizamos el contenido del fichero readme. Este contiene la contraseña del usuario del nivel posterior.
+Salimos de la conexión ssh actual y abrimos una nueva con las credenciales obtenidas.
+ 
+Level 1 -> Level 2:
+	Objetivo: Obtener la contraseña contenida en el fichero -
+	Host: bandit.labs.overthewire.org
+	Port: 2220
+	Username: bandit1
+	Password: *Obtenida del readme del nivel
+	Commands: ls, cd, cat, file, du, find
+- Procedimiento: Normalmente, se generan conflictos al intentar listar el contenido de un fichero nombrado como un - (guión)
+* Haré uso de un/os truco/s ->
+	- Especificando directorio actual, seguido de fichero en cuestión:
+		cat ./- (de esta forma indicamos que queremos visualizar el contenido del fichero, tirando de ruta)
+		cat /home/bandit1 (de la misma manera, listamos haciendo uso de la ruta absoluta del fichero. A partir de "pwd", obtenemos la ruta absoluta en la cual se encuentra contenido el fichero)
+		cat /home/bandit1/* (lista todos los contenidos de los directorios)
+		cat $(pwd)/- (output de un comando aplicado a nivel de sistema)
+
+Level 2 -> Level 3
+	Objetivo: Obtener la contraseña del fichero "spaces in this filename"
+	Host: bandit.labs.overthewire.org
+	Port: 2220
+	Username: bandit2
+	Password: *Obtenida en el fichero del nivel anterior
+	Commands: ls, cd, cat, file, du, find
+- Procedimiento: 
+* Haré uso de un/os truco/s ->
+		cat "spaces in this filename" (incluyendo el nombre del fichero entre comillas dobles. De esta forma indicamos que el mismo está separado por espacios)
+		cat 'spaces in this filename' (incluyendo el nombre del fichero entre comillas simples. De esta forma indicamos que el mismo está separado por espacios)
+		cat spaces\ in\ this\ filename (incluyendo el carácter de escape de forma manual o haciendo uso de la tabulación)
+		cat sp* (indico que quiero visualizar el contenido de aquello que empiece por las letras indicadas, sea cual sea el fichero)
+		cat *name (indico que quiero visualizar el contenido de aquello que termine por las letras indicadas, sea cual sea el fichero)
+		cat *this* (indico que quiero visualizar el contenido de aquello que contiene las letras indicadas y está rodeado por algo más)
+		cat *
+		cat $(pwd)/*
+		cat /home/bandit2/*
+		
+Level 3 -> Level 4
+	Objetivo: Obtener la contraseña almacenada en un fichero oculto dentro del directorio inhere
+	Host: bandit.labs.overthewire.org
+	Port: 2220
+	Username: bandit3
+	Password: *Obtenida en el fichero del nivel anterior 
+	Commands: ls, cd, cat, file, du, find
+- Procedimiento:
+* Haré uso de un/os truco/s ->
+		cat ls -a inhere (me permite visualizar los archivos ocultos "representados en Linux a través de la notación .nombre_fichero" dentro del directorio)
+		find . (busca de forma recursiva archivos ocultos)
+		find . -type f (como en el caso anterior, con la salvedad de que ahora sólo busco aquellos elementos que sean ficheros)
+		find . -type f -printf "%f\t%p\t%u\t%g\t%m\n" | column -t (como en el caso anterior, pero, incluyendo numerosos parámetros para formatear al gusto la salida de información)
+			buscará ficheros - formatea la salida de datos - %f "archivos", \t "de forma tabulada", %p "ruta absoluta del archivo", %u "usuario", %g "el grupo asignado", %m "modo, que hace referencia a los permisos asignados en formato numérico", \n "se aplica salto de línea para modificar como se visualiza la información" - column -t -> nos permite dividir el contenido en columnas correctamente separadas para conseguir un mejor aspecto visual de la información
+
+		find . -name .hidden (desde el directorio actual, buscamos fichero/s oculto/s con el nombre .hidden)
+	IMPORTANTE!!! -> Uso de ** xargs ** (esta utilidad me permite de forma paralela al output obtenido de una ejecución anterior, ejecutar otro comando sobre o a partir de este)
+		find . -name .hidden | xargs cat (la parte izquierda de la instrucción, encuentra el fichero oculto que estoy buscando, mostrando su ruta absoluta. En la parte derecha y gracias a xargs, ejecuto un cat sobre el resultado de la primera instrucción)
+
+Level 4 -> Level 5
+	Objetivo: Obtener la contraseña almacenada en el único fichero legible por humanos, dentro del directorio inhere
+	Host: bandit.labs.overthewire.org
+	Port: 2220
+	Username: bandit4
+	Password: *Obtenida en el fichero del nivel anterior
+	Commands: ls, cd, cat, file, du, find
+-Procedimiento:
+* Haré uso de un/os truco/s ->
